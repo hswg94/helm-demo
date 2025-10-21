@@ -6,9 +6,9 @@ image:
   tag: "1.25.3"
 
 service:
-  type: ClusterIP
-  port: 80          # External port (what service exposes)
-  targetPort: 8080    # Internal port (what nginx listens on)
+  type: LoadBalancer
+  port: 80 # External port (what service exposes)
+  targetPort: 8080 # Internal port (what nginx listens on)
 
 ingress:
   enabled: true
