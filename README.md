@@ -40,10 +40,14 @@ minikube start
 ### 3. Deploy the Helm Chart
 
 # Install the chart
+```powershell
 helm install helm-demo .
-
+```
 # Verify deployment
+```powershell
 kubectl get services
+```
+```powershell
 kubectl get pods
 ```
 
