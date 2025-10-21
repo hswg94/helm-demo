@@ -19,13 +19,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: {{ .Values.service.targetPort }}
-          livenessProbe:
+          livenessProbe: # necessary for high availability as it uses health check
             httpGet:
               path: /health
               port: {{ .Values.service.targetPort }}
             initialDelaySeconds: 30
             periodSeconds: 10
-          readinessProbe:
+          readinessProbe: # necessary for load balancer to know when pod is ready
             httpGet:
               path: /health
               port: {{ .Values.service.targetPort }}
@@ -34,7 +34,7 @@ spec:
           volumeMounts:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
-              subPath: nginx.conf
+              subPath: nginx.conf # Mount the config file from ConfigMap
       volumes:
         - name: nginx-config
           configMap:
