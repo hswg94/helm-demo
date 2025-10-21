@@ -52,7 +52,6 @@ kubectl get pods
 ```
 
 ### 4. Setup Host Files (Optional)
-**Add to Windows Hosts File:**
 1. Open as Administrator: `C:\Windows\System32\drivers\etc\hosts`
 2. Add line: `127.0.0.1 nginx-ha.local`
 3. Access: `http://nginx-ha.local`
@@ -61,11 +60,11 @@ kubectl get pods
 - HTTP: `http://localhost:80`
 - OR Custom Domain: `http://nginx-ha.local` (requires hosts file setup)
 
-# View pod information endpoint
+**View pod information endpoint:**
 ```powershell
 curl http://localhost:80/pod-info
 ```
-# Health check endpoint
+**Health check endpoint:**
 ```powershell
 curl http://localhost:80/health
 ```
