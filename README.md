@@ -166,16 +166,6 @@ kubectl port-forward pod/POD-NAME 8080:8080
 
 ### Access and Testing
 
-```powershell
-# Port forward service
-kubectl port-forward service/helm-demo-nginx-ha 80:80
-
-# Test with curl
-curl http://localhost:80
-
-# Check which pod handled request
-curl -I http://localhost:80
-
 # View pod information endpoint
 curl http://localhost:80/pod-info
 
@@ -186,14 +176,12 @@ curl http://localhost:80/health
 ### Load Balancing Testing
 
 ```powershell
-# Test from inside cluster (shows real load balancing)
-kubectl run test-pod --image=curlimages/curl -it --rm -- sh
-# Inside pod: curl helm-demo-nginx-ha/pod-info (repeat multiple times)
-
-# Force new connections (close browser between tests)
-# Use different browsers or incognito windows
+1..10 | ForEach-Object { Invoke-RestMethod http://localhost/pod-info }
 ```
 
+```bash
+for i in {1..10}; do curl -s http://localhost/pod-info; done
+```
 ## Troubleshooting
 
 ### Common Issues
