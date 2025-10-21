@@ -25,21 +25,6 @@ A production-ready Helm chart that deploys a highly available nginx reverse prox
 winget install Helm.Helm
 ```
 
-**Option B: Using Chocolatey**
-```powershell
-choco install kubernetes-helm
-```
-
-**Option C: Using Scoop**
-```powershell
-scoop install helm
-```
-
-**Option D: Manual Installation**
-1. Download from [Helm Releases](https://github.com/helm/helm/releases)
-2. Extract and add to PATH
-3. Restart PowerShell
-
 ### 2. Start Kubernetes Cluster
 
 **Docker Desktop:**
@@ -55,14 +40,11 @@ minikube start
 
 ### 3. Deploy the Helm Chart
 
-```powershell
-# Navigate to the helm chart directory
-cd c:\Users\HS\Desktop\helm-demo
-
 # Install the chart
 helm install helm-demo .
 
 # Verify deployment
+kubectl get services
 kubectl get pods
 ```
 
@@ -70,21 +52,19 @@ kubectl get pods
 
 **Port Forward to Access Locally:**
 ```powershell
-kubectl port-forward service/helm-demo-nginx-ha 8080:80
+kubectl port-forward service/helm-demo-nginx-ha 80:80
 ```
 
 **Access via Browser:**
-- HTTP: `http://localhost:8080`
+- HTTP: `http://localhost:80`
 - Custom Domain: `http://nginx-ha.local` (requires hosts file setup)
 
-### 5. Setup Custom Domain (Optional)
+### 5. Setup Host Files (Optional)
 
 **Add to Windows Hosts File:**
 1. Open as Administrator: `C:\Windows\System32\drivers\etc\hosts`
 2. Add line: `127.0.0.1 nginx-ha.local`
-3. Save and close
-4. Port forward to port 80: `kubectl port-forward service/helm-demo-nginx-ha 80:80`
-5. Access: `http://nginx-ha.local`
+3. Access: `http://nginx-ha.local`
 
 ## Configuration
 
@@ -140,14 +120,14 @@ service:
 # Install chart
 helm install helm-demo .
 
+# Uninstall chart
+helm uninstall helm-demo
+
 # Upgrade deployment after configuration file modifications
 helm upgrade helm-demo .
 
-# Upgrade with custom values
+# Upgrade with set values
 helm upgrade helm-demo . --set replicaCount=5
-
-# Uninstall chart
-helm uninstall helm-demo
 
 # Check deployment status
 helm status helm-demo
@@ -188,19 +168,19 @@ kubectl port-forward pod/POD-NAME 8080:8080
 
 ```powershell
 # Port forward service
-kubectl port-forward service/helm-demo-nginx-ha 8080:80
+kubectl port-forward service/helm-demo-nginx-ha 80:80
 
 # Test with curl
-curl http://localhost:8080
+curl http://localhost:80
 
 # Check which pod handled request
-curl -I http://localhost:8080
+curl -I http://localhost:80
 
 # View pod information endpoint
-curl http://localhost:8080/pod-info
+curl http://localhost:80/pod-info
 
 # Health check endpoint
-curl http://localhost:8080/health
+curl http://localhost:80/health
 ```
 
 ### Load Balancing Testing
@@ -250,21 +230,6 @@ kubectl get pods
 **5. SSL certificate errors:**
 - For development: disable SSL in values.yaml
 - For production: set up proper certificates or use cert-manager
-
-### Performance Tuning
-
-```yaml
-# High traffic configuration
-replicaCount: 5
-
-# Backend server configuration
-upstreams:
-  - name: backend_servers
-    servers:
-      - "backend1.example.com:3000"
-      - "backend2.example.com:3000"
-      - "backend3.example.com:3000"
-```
 
 ## Uninstalling
 
