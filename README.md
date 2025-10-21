@@ -69,7 +69,7 @@ curl http://localhost:80/pod-info
 curl http://localhost:80/health
 ```
 
-### Load Balancing Testing
+### 6. Load Balancing Testing
 
 ```powershell
 1..10 | ForEach-Object { Invoke-RestMethod http://localhost/pod-info }
