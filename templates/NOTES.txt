@@ -1,0 +1,25 @@
+NGINX HA Deployment Successful!
+
+1. Access your application:
+{{- if .Values.ingress.enabled }}
+  {{- if .Values.ingress.tls.enabled }}
+  https://{{ .Values.ingress.host }}
+  {{- else }}
+  http://{{ .Values.ingress.host }}
+  {{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "nginx-ha.fullname" . }} 8080:{{ .Values.service.port }}
+  Then visit: http://localhost:443443
+{{- end }}
+
+2. Check pod status:
+  kubectl get pods -l app={{ .Chart.Name }}
+
+3. Configuration:
+  - Replicas: {{ .Values.replicaCount }}
+  - Upstream servers: {{ len .Values.upstreams }} configured
+  {{- if .Values.ingress.tls.enabled }}
+  - SSL/TLS: Enabled
+  {{- else }}
+  - SSL/TLS: Disabled
+  {{- end }}

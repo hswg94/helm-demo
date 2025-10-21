@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx-ha.fullname" . }}-config
+  labels:
+    {{- include "nginx-ha.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+{{ include "nginx-ha.config" . | indent 4 }}

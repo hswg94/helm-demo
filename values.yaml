@@ -1,0 +1,25 @@
+# Simple nginx-ha values
+replicaCount: 3
+
+image:
+  repository: nginx
+  tag: "1.25.3"
+
+service:
+  type: ClusterIP
+  port: 80          # External port (what service exposes)
+  targetPort: 8080    # Internal port (what nginx listens on)
+
+ingress:
+  enabled: true
+  host: nginx-ha.local
+  # SSL/TLS Configuration - set to true to enable
+  tls:
+    enabled: false
+
+# Configurable upstream servers
+upstreams:
+  - name: backend_servers
+    servers:
+      - "54.255.182.118:5000"
+      - "54.255.182.118:5001"
