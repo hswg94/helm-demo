@@ -1,218 +1,314 @@
-# NGINX High Availability Helm Chart
+# Nginx High Availability (HA) Helm Chart
 
-This Helm chart deploys a highly available NGINX configuration with configurable upstream servers and SSL/TLS support for production environments.
+A production-ready Helm chart that deploys a highly available nginx reverse proxy with 3 replicas, configurable upstream servers, and SSL/TLS support.
 
 ## Features
 
-- **High Availability**: 3 replica minimum with pod anti-affinity rules
-- **Configurable Upstream Servers**: Easy configuration of backend servers
-- **SSL/TLS Support**: Configurable SSL/TLS termination
-- **Production Ready**: Includes resource limits, health checks, and monitoring
-- **Security**: Pod security contexts, network policies, and RBAC
-- **Scalability**: Horizontal Pod Autoscaler support
-- **Resilience**: Pod Disruption Budget for controlled maintenance
+- **High Availability**: 3 nginx replicas for fault tolerance
+- **Configurable Upstream Servers**: Easy backend server configuration
+- **SSL/TLS Support**: Optional HTTPS with configurable certificates
+- **Health Checks**: Built-in liveness and readiness probes
+- **Load Balancing**: Automatic traffic distribution across replicas
+- **Performance Optimized**: 8 worker processes, 4096 connections per worker
 
 ## Prerequisites
 
-- Kubernetes 1.19+
-- Helm 3.0+
-- (Optional) Ingress Controller for external access
-- (Optional) Cert-Manager for automatic SSL certificate management
+- Kubernetes cluster (Docker Desktop, Minikube, or cloud provider)
+- Helm 3.x installed
 
-## Installation
+## Installation Guide
 
-### Basic Installation
+### 1. Install Helm (Windows)
 
-```bash
-helm install nginx-ha ./nginx-ha
+**Option A: Using Winget (Recommended)**
+```powershell
+winget install Helm.Helm
 ```
 
-### Installation with Custom Values
-
-```bash
-helm install nginx-ha ./nginx-ha -f custom-values.yaml
+**Option B: Using Chocolatey**
+```powershell
+choco install kubernetes-helm
 ```
 
-### Installation with SSL/TLS Enabled
-
-```bash
-# First, create the TLS secret
-kubectl create secret tls nginx-ha-tls \
-  --cert=path/to/tls.cert \
-  --key=path/to/tls.key
-
-# Then install with SSL enabled
-helm install nginx-ha ./nginx-ha \
-  --set nginx.ssl.enabled=true \
-  --set ingress.tls.enabled=true
+**Option C: Using Scoop**
+```powershell
+scoop install helm
 ```
+
+**Option D: Manual Installation**
+1. Download from [Helm Releases](https://github.com/helm/helm/releases)
+2. Extract and add to PATH
+3. Restart PowerShell
+
+### 2. Start Kubernetes Cluster
+
+**Docker Desktop:**
+1. Open Docker Desktop
+2. Go to Settings → Kubernetes
+3. Check "Enable Kubernetes"
+4. Click "Apply & Restart"
+
+**Minikube:**
+```powershell
+minikube start
+```
+
+### 3. Deploy the Helm Chart
+
+```powershell
+# Navigate to the helm chart directory
+cd c:\Users\HS\Desktop\helm-demo
+
+# Install the chart
+helm install helm-demo .
+
+# Verify deployment
+kubectl get pods
+```
+
+### 4. Access the Service
+
+**Port Forward to Access Locally:**
+```powershell
+kubectl port-forward service/helm-demo-nginx-ha 8080:80
+```
+
+**Access via Browser:**
+- HTTP: `http://localhost:8080`
+- Custom Domain: `http://nginx-ha.local` (requires hosts file setup)
+
+### 5. Setup Custom Domain (Optional)
+
+**Add to Windows Hosts File:**
+1. Open as Administrator: `C:\Windows\System32\drivers\etc\hosts`
+2. Add line: `127.0.0.1 nginx-ha.local`
+3. Save and close
+4. Port forward to port 80: `kubectl port-forward service/helm-demo-nginx-ha 80:80`
+5. Access: `http://nginx-ha.local`
 
 ## Configuration
 
-### Key Configuration Options
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `replicaCount` | Number of NGINX replicas | `3` |
-| `nginx.upstreams` | Backend server configuration | See values.yaml |
-| `nginx.ssl.enabled` | Enable SSL/TLS | `false` |
-| `ingress.enabled` | Enable ingress | `true` |
-| `ingress.tls.enabled` | Enable TLS in ingress | `false` |
-| `podDisruptionBudget.enabled` | Enable PDB | `true` |
-| `autoscaling.enabled` | Enable HPA | `false` |
-
-### Configuring Upstream Servers
-
-Update the `nginx.upstreams` section in values.yaml:
+### Basic Configuration (values.yaml)
 
 ```yaml
-nginx:
-  upstreams:
-    - name: backend
-      servers:
-        - server: "backend1.example.com:443443"
-          weight: 1
-          max_fails: 3
-          fail_timeout: "30s"
-        - server: "backend2.example.com:443443"
-          weight: 1
-          max_fails: 3
-          fail_timeout: "30s"
+# Number of nginx replicas
+replicaCount: 3
+
+# Docker image settings
+image:
+  repository: nginx
+  tag: "1.25.3"
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+# Ingress settings
+ingress:
+  enabled: true
+  host: nginx-ha.local
+  tls:
+    enabled: false
+
+# Backend servers (configure your applications here)
+upstreams:
+  - name: backend_servers
+    servers:
+      - "192.168.1.100:3000"  # Replace with your backend IPs
+      - "192.168.1.101:3000"
 ```
 
-### Enabling SSL/TLS
+### Enable HTTPS/SSL
 
-1. Create a TLS secret:
-```bash
-kubectl create secret tls nginx-ha-tls \
-  --cert=path/to/certificate.crt \
-  --key=path/to/private.key
-```
-
-2. Enable SSL in values.yaml:
 ```yaml
-nginx:
-  ssl:
-    enabled: true
-
 ingress:
   tls:
     enabled: true
-    hosts:
-      - your-domain.com
+    secretName: nginx-ha-tls
+service:
+  port: 443
+  targetPort: 443
 ```
 
-### High Availability Configuration
+## Useful Commands
 
-The chart includes several HA features:
+### Helm Operations
 
-- **Pod Anti-Affinity**: Spreads pods across different nodes
-- **Rolling Updates**: Zero-downtime deployments
-- **Pod Disruption Budget**: Ensures minimum availability during maintenance
-- **Health Checks**: Liveness and readiness probes
-- **Resource Management**: CPU and memory limits/requests
+```powershell
+# Install chart
+helm install helm-demo .
 
-### Scaling Configuration
+# Upgrade deployment after configuration file modifications
+helm upgrade helm-demo .
 
-Enable autoscaling:
+# Upgrade with custom values
+helm upgrade helm-demo . --set replicaCount=5
 
-```yaml
-autoscaling:
-  enabled: true
-  minReplicas: 3
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 443
+# Uninstall chart
+helm uninstall helm-demo
+
+# Check deployment status
+helm status helm-demo
+
+# View deployment history
+helm history helm-demo
+
+# Rollback to previous version
+helm rollback helm-demo 1
 ```
 
-## Monitoring and Health Checks
+### Kubernetes Debugging
 
-The chart includes built-in health check endpoints:
+```powershell
+# Check services status
+kubectl get services
 
-- `/health` - Liveness probe endpoint
-- `/ready` - Readiness probe endpoint
+# Check pods status
+kubectl get pods
 
-## Security Features
+# View pod logs
+kubectl logs -l app.kubernetes.io/name=nginx-ha
 
-- **Pod Security Context**: Non-root user, read-only filesystem
-- **Network Policies**: Control network traffic (optional)
-- **Service Account**: Dedicated service account with minimal permissions
-- **Security Context**: Dropped capabilities and restricted access
+# Describe service
+kubectl describe service helm-demo-nginx-ha
 
-## Upgrading
+# Check pod details
+kubectl describe pods
 
-To upgrade the deployment:
+# View configmap
+kubectl get configmap helm-demo-nginx-ha-config -o yaml
 
-```bash
-helm upgrade nginx-ha ./nginx-ha -f your-values.yaml
+# Port forward to specific pod
+kubectl port-forward pod/POD-NAME 8080:8080
 ```
 
-## Uninstallation
+### Access and Testing
 
-```bash
-helm uninstall nginx-ha
+```powershell
+# Port forward service
+kubectl port-forward service/helm-demo-nginx-ha 8080:80
+
+# Test with curl
+curl http://localhost:8080
+
+# Check which pod handled request
+curl -I http://localhost:8080
+
+# View pod information endpoint
+curl http://localhost:8080/pod-info
+
+# Health check endpoint
+curl http://localhost:8080/health
+```
+
+### Load Balancing Testing
+
+```powershell
+# Test from inside cluster (shows real load balancing)
+kubectl run test-pod --image=curlimages/curl -it --rm -- sh
+# Inside pod: curl helm-demo-nginx-ha/pod-info (repeat multiple times)
+
+# Force new connections (close browser between tests)
+# Use different browsers or incognito windows
 ```
 
 ## Troubleshooting
 
-### Check Pod Status
-```bash
-kubectl get pods -l app.kubernetes.io/name=nginx-ha
+### Common Issues
+
+**1. Helm not found:**
+```powershell
+# Restart PowerShell after installation
+# Or reload PATH: $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine")
 ```
 
-### View Logs
-```bash
-kubectl logs -l app.kubernetes.io/name=nginx-ha -f
+**2. Kubernetes cluster unreachable:**
+```powershell
+# Check cluster status
+kubectl cluster-info
+
+# For Docker Desktop: ensure Kubernetes is enabled
+# For Minikube: minikube status
 ```
 
-### Check Configuration
-```bash
-kubectl get configmap nginx-ha-config -o yaml
+**3. Port forwarding fails:**
+```powershell
+# Check if service exists
+kubectl get services
+
+# Verify pods are running
+kubectl get pods
 ```
 
-### Test Connectivity
-```bash
-kubectl port-forward svc/nginx-ha 443443:443
-curl http://localhost:443443/health
+**4. nginx-ha.local not accessible:**
+- Ensure hosts file is updated correctly
+- Use port 80 for port forwarding when using custom domain
+- Or use localhost:8080 instead
+
+**5. SSL certificate errors:**
+- For development: disable SSL in values.yaml
+- For production: set up proper certificates or use cert-manager
+
+### Performance Tuning
+
+```yaml
+# High traffic configuration
+replicaCount: 5
+
+# Backend server configuration
+upstreams:
+  - name: backend_servers
+    servers:
+      - "backend1.example.com:3000"
+      - "backend2.example.com:3000"
+      - "backend3.example.com:3000"
 ```
 
-## Development
+## Uninstalling
 
-### Testing the Chart
+### Complete Cleanup
 
-```bash
-# Template generation
-helm template nginx-ha ./nginx-ha
+```powershell
+# Remove Helm deployment
+helm uninstall helm-demo
 
-# Lint the chart
-helm lint ./nginx-ha
+# Remove any persistent volumes (if created)
+kubectl delete pvc --all
 
-# Dry run installation
-helm install nginx-ha ./nginx-ha --dry-run --debug
+# Verify cleanup
+kubectl get all
 ```
 
-### Customization
+### Remove Helm (if needed)
 
-You can customize the NGINX configuration by:
+```powershell
+# Using Winget
+winget uninstall Helm.Helm
 
-1. Modifying the `nginx` section in values.yaml
-2. Adding custom configuration snippets
-3. Mounting additional config files
+# Using Chocolatey
+choco uninstall kubernetes-helm
 
-## Contributing
+# Using Scoop
+scoop uninstall helm
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+# Manual: Remove from PATH and delete binary
+```
 
-## License
+## Notes
 
-This Helm chart is licensed under the MIT License.
+- **Port Forwarding**: Creates single connection - use cluster testing for real load balancing
+- **SSL Certificates**: Self-signed certificates will show browser warnings
+- **Backend Servers**: Update upstream servers in values.yaml to point to your actual applications
+- **Health Checks**: Endpoints `/health` and `/pod-info` are available for monitoring
+- **High Availability**: Automatic pod restart and traffic routing to healthy instances
+- **Configuration**: All nginx settings are configurable through values.yaml
+- **Scaling**: Easily scale replicas up/down with `--set replicaCount=N`
 
 ## Support
 
-For support and questions:
-- Create an issue in the repository
-- Contact the DevOps team
-- Check the troubleshooting section above
+For issues or questions:
+1. Check pod logs: `kubectl logs -l app.kubernetes.io/name=nginx-ha`
+2. Verify configuration: `kubectl get configmap helm-demo-nginx-ha-config -o yaml`
+3. Test connectivity: `kubectl port-forward` and `curl` commands above
