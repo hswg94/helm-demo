@@ -64,25 +64,6 @@ Remove the deployment completely:
 helm uninstall helm-demo
 ```
 
-## Accessing Your Application
-
-### Port Forward (Easiest)
-```powershell
-kubectl port-forward service/helm-demo-nginx-ha 8080:80
-```
-Then access: `http://localhost:8080`
-
-### Using Custom Domain (Requires hosts file)
-1. Add to `C:\Windows\System32\drivers\etc\hosts`:
-   ```
-   127.0.0.1 nginx-ha.local
-   ```
-2. Port forward to port 80:
-   ```powershell
-   kubectl port-forward service/helm-demo-nginx-ha 80:80
-   ```
-3. Access: `http://nginx-ha.local`
-
 ## Debugging Commands
 
 ### Check Pods Status
@@ -110,54 +91,4 @@ kubectl logs -l app=nginx-ha
 kubectl describe deployment helm-demo-nginx-ha
 kubectl describe service helm-demo-nginx-ha
 kubectl describe ingress helm-demo-nginx-ha
-```
-
-## Template Testing
-Test your templates without deploying:
-```powershell
-# Render templates locally
-helm template helm-demo .
-
-# Validate chart
-helm lint .
-
-# Dry run installation
-helm install helm-demo . --dry-run --debug
-```
-
-## Configuration Examples
-
-### High Availability Setup
-```yaml
-# values-ha.yaml
-replicaCount: 5
-resources:
-  requests:
-    memory: "256Mi"
-    cpu: "250m"
-  limits:
-    memory: "512Mi"
-    cpu: "500m"
-```
-
-### Production with SSL
-```yaml
-# values-prod.yaml
-ingress:
-  enabled: true
-  host: nginx.company.com
-  tls:
-    enabled: true
-
-upstreams:
-  - name: backend_servers
-    servers:
-      - "prod-server1:5000"
-      - "prod-server2:5000"
-      - "prod-server3:5000"
-```
-
-Deploy with:
-```powershell
-helm upgrade helm-demo . -f values-prod.yaml
 ```
