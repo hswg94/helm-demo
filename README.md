@@ -62,9 +62,11 @@ kubectl get pods
 - OR Custom Domain: `http://nginx-ha.local` (requires hosts file setup)
 
 # View pod information endpoint
+```powershell
 curl http://localhost:80/pod-info
-
+```
 # Health check endpoint
+```powershell
 curl http://localhost:80/health
 ```
 
