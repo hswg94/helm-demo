@@ -21,10 +21,6 @@ helm upgrade helm-demo . --set replicaCount=5
 # Enable SSL/TLS
 helm upgrade helm-demo . --set ingress.tls.enabled=true
 
-# Change upstream servers
-helm upgrade helm-demo . --set upstreams[0].servers[0]="new-server:3000"
-```
-
 ## Update with Values File
 Use a different values file:
 ```powershell
