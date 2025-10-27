@@ -4,9 +4,11 @@ NGINX HA Deployment Successful!
 {{- if .Values.ingress.enabled }}
   {{- if .Values.ingress.tls.enabled }}
   https://{{ .Values.ingress.host }}
-  http://localhost:80
   {{- else }}
   http://{{ .Values.ingress.host }}
+  http://localhost:80
+  http://localhost:80/pod-info
+  http://localhost:80/health
   {{- end }}
 {{- else }}
   kubectl port-forward svc/{{ include "nginx-ha.fullname" . }} 8080:{{ .Values.service.port }}

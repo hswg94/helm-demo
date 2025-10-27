@@ -32,11 +32,6 @@ http {
         listen {{ .Values.service.targetPort }};
         server_name localhost;
 
-        location /health {
-            return 200 'healthy';
-            access_log off;
-        }
-
         location /pod-info {
             return 200 'Pod: $hostname\nIP: $server_addr\n';
             add_header Content-Type text/plain;
