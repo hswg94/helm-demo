@@ -1,4 +1,3 @@
-# Simple nginx-ha values
 replicaCount: 3
 
 image:
